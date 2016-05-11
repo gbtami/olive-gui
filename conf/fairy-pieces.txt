@@ -5,6 +5,7 @@
 35	3,5-leaper	s3			
 36	3,6-leaper	s3			
 37	3,7-leaper	s3			
+ah	maohopper	s3		
 al	alfil	b3			2,2 leaper
 am	amazon	a	d		queen + knight
 an	antelope	s1			3,4 leaper
@@ -51,6 +52,7 @@ em	empress
 eq	equihopper	e	d		
 et	elephant				0,1+1,1+1,2 rider
 f	friend	o			Dummy piece which, when it is controlled, moves only like the controlling unit(s).
+fa	faro	r3		
 fe	fers	b3			1,1 leaper
 fr	fersrider				like bishop, but different rebirth square
 g	grasshopper	q2	d		queen hopper
@@ -77,6 +79,7 @@ le	leo	q3	d		chinese queen
 lh	leaf hopper			
 li	lion	q3			(0,1)Prolonged Hopper + (1,1)Prolonged Hopper
 ln	nightrider locust	s1			
+lo	loco	b3		
 lr	rook locust	r1			
 ls	rose locust	f			
 m	moose				
@@ -96,6 +99,7 @@ nh	nightrider hopper	s3
 nl	nightrider lion	s3			
 o	orphan	o	d		
 oa	moarider				
+oh	moahopper	s3		
 ok	okapi				knight + zebra
 or	Orix	e1	d		English equihopper on queen lines
 p	pawn	p	d		
@@ -128,6 +132,8 @@ s1	(1,1)-Zigzag Nightrider	s2			(e.g. b1-a3-c2-b4-d3...)
 s2	(2,0)-Zigzag Nightrider	s2			(e.g. a1-b3-c1-d3-e1...)
 s3	(3,3)-Zigzag Nightrider	s2			(e.g. a1-b3-d4-e6-g7...)
 s4	(4,0)-Zigzag Nightrider	s2			(e.g. a1-c2-e1-g2...)
+sa	saltador	s3		
+se	senora	q3
 sh	ship				
 si	sirene	q3			
 sk	skylla	a			
@@ -135,6 +141,7 @@ so	scorpion
 sp	superpawn	p1			
 sq	squirrel   				
 ss	("Spiralspringer")				
+st	sting	k2		
 sw	sparrow				
 th	tree hopper				
 tr	triton	r3			
@@ -144,7 +151,7 @@ wa	waran
 we	wazir	r2			0,1 leaper
 wr	wazirrider				like rook, but different rebirth square
 z	zebra	s3	d		2,3 leaper
+ze	zebu				
 zh	zebrarider hopper				
 zr	zebrarider
-ze	zebu				
 X/Y	X/Y hunter				generalized hunter: away from the homebase like a n X, in direction of the homebase like an Y; horizontal moves not allowed
