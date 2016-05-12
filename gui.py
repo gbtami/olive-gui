@@ -1093,6 +1093,12 @@ class ChessBoxItemManagable(ChessBoxItem):
             return
         
         menu = QtGui.QMenu(Lang.value('MI_Fairy_pieces'))
+
+        populateFromCurrent = QtGui.QAction(Lang.value('MI_Populate_from_current'), self)
+        populateFromCurrent.triggered.connect(self.manager.populateFromCurrent)
+        menu.addAction(populateFromCurrent)
+        menu.addSeparator()
+
         if self.piece is None:
             addNewAction = QtGui.QAction(Lang.value('MI_Add_piece'), self)
             addNewAction.triggered.connect(self.choose)
@@ -1110,7 +1116,7 @@ class ChessBoxItemManagable(ChessBoxItem):
             action = QtGui.QAction(Conf.zoos[i]['name'], self)
             action.triggered.connect(self.manager.makeChangeZooCallable(i))
             menu.addAction(action)
-        
+
         menu.exec_(e.globalPos())
         
     def remove(self):
@@ -1314,7 +1320,17 @@ class ChessBox(QtGui.QWidget):
                     zoo[i][j] = self.items[i*ChessBox.cols + j].piece.serialize()
                 else:
                     zoo[i][j] = ''
-        
+
+    def populateFromCurrent(self):
+        self.deleteAll()
+        i, unique = 0, {}
+        for piece in model.getFairyPieces(Mainframe.model.cur()):
+            k = str(piece)
+            if (len(self.items) > i) and not unique.has_key(k):
+                unique[k] = True
+                self.items[i].changePiece(piece)
+                i += 1
+
                 
 class AddFairyPieceDialog(options.OkCancelDialog):
     def __init__(self, Lang):

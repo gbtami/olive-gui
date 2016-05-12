@@ -150,6 +150,11 @@ MI_Delete_all_pieces:
   rs: Уклони све фигуре
   ru: Удалить все фигуры
   de: Alle Steine entfernen
+MI_Populate_from_current:
+  en: From current entry
+  rs: Од овај проблем
+  ru: Из текущей композиции
+  de: Vom aktuellen Problem
 MI_Add_piece:
   en: Add piece
   rs: Додај фигуру

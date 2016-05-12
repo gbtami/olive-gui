@@ -562,14 +562,19 @@ def hasFairyConditions(e):
     return False
 
 def hasFairyPieces(e):
+    return len([p for p in getFairyPieces(e)]) > 0
+
+def getFairyPieces(e):
     if not e.has_key('algebraic'):
-        return False
+        return
     board = Board()
     board.fromAlgebraic(e['algebraic'])
     for s, p in Pieces(board):
-        if (p.color not in ['white', 'black']) or (len(p.specs) != 0) or (p.name.lower() not in 'kqrbsp'):
-            return True
-    return False
+        if isFairy(p):
+            yield p
+
+def isFairy(p):
+    return (p.color not in ['white', 'black']) or (len(p.specs) != 0) or (p.name.lower() not in 'kqrbsp')
 
 def hasFairyElements(e):
     return hasFairyConditions(e) or hasFairyPieces(e)
