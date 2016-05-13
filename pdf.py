@@ -13,7 +13,8 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.pagesizes import letter, A4
 from reportlab.lib import colors
 
-# fixing py2exe/RLTK bug: http://www.python-forum.org/pythonforum/viewtopic.php?f=15&t=21922
+# fixing py2exe/RLTK bug:
+# http://www.python-forum.org/pythonforum/viewtopic.php?f=15&t=21922
 from reportlab.pdfbase import _fontdata_widths_courier
 from reportlab.pdfbase import _fontdata_widths_courierbold
 from reportlab.pdfbase import _fontdata_widths_courieroblique
@@ -45,147 +46,199 @@ A5_MARGIN_X, A5_MARGIN_Y = 24, 16
 AUX_X_MARGIN = 12
 
 FONT_FAMILY = 'DejaVu Serif Condensed'
-FONT_SIZE = {'header':10, 'chess':18, 'subscript':8, 'footer':8, 'rightpane': 8}
+FONT_SIZE = {
+    'header': 10,
+    'chess': 18,
+    'subscript': 8,
+    'footer': 8,
+    'rightpane': 8}
 FONT_DIR = 'resources/fonts/dejavu/'
-FONT_INFO = \
-    {'normal':(FONT_FAMILY+'', 'DejaVuSerifCondensed.ttf'),
-    'bold':(FONT_FAMILY+' Bold', 'DejaVuSerifCondensed-Bold.ttf'),
-    'italic':(FONT_FAMILY+' Italic', 'DejaVuSerifCondensed-Italic.ttf'),
-    'boldItalic':(FONT_FAMILY+' Bold Italic', 'DejaVuSerifCondensed-BoldItalic.ttf')
-    }
-CHESS_FONTS = {\
-    'd':('GC2004D', 'resources/fonts/gc2004d_.ttf'), 
-    'x':('GC2004X', 'resources/fonts/gc2004x_.ttf'), 
-    'y':('GC2004Y', 'resources/fonts/gc2004y_.ttf')
-    }    
+FONT_INFO = {
+    'normal': (
+        FONT_FAMILY + '',
+        'DejaVuSerifCondensed.ttf'),
+    'bold': (
+        FONT_FAMILY + ' Bold',
+        'DejaVuSerifCondensed-Bold.ttf'),
+    'italic': (
+        FONT_FAMILY + ' Italic',
+        'DejaVuSerifCondensed-Italic.ttf'),
+    'boldItalic': (
+        FONT_FAMILY + ' Bold Italic',
+        'DejaVuSerifCondensed-BoldItalic.ttf')}
+CHESS_FONTS = {
+    'd': ('GC2004D', 'resources/fonts/gc2004d_.ttf'),
+    'x': ('GC2004X', 'resources/fonts/gc2004x_.ttf'),
+    'y': ('GC2004Y', 'resources/fonts/gc2004y_.ttf')
+}
 for variation in FONT_INFO.keys():
-    pdfmetrics.registerFont(TTFont(FONT_INFO[variation][0], FONT_DIR+FONT_INFO[variation][1]))
-pdfmetrics.registerFontFamily(FONT_FAMILY,\
-    normal=FONT_INFO['normal'][0], bold=FONT_INFO['bold'][0],\
-    italic=FONT_INFO['italic'][0], boldItalic=FONT_INFO['boldItalic'][0])
+    pdfmetrics.registerFont(
+        TTFont(
+            FONT_INFO[variation][0],
+            FONT_DIR +
+            FONT_INFO[variation][1]))
+pdfmetrics.registerFontFamily(
+    FONT_FAMILY,
+    normal=FONT_INFO['normal'][0],
+    bold=FONT_INFO['bold'][0],
+    italic=FONT_INFO['italic'][0],
+    boldItalic=FONT_INFO['boldItalic'][0])
 for key in CHESS_FONTS.keys():
     pdfmetrics.registerFont(TTFont(CHESS_FONTS[key][0], CHESS_FONTS[key][1]))
-    pdfmetrics.registerFontFamily(key, normal=key, bold=key, italic=key, boldItalic=key)
+    pdfmetrics.registerFontFamily(
+        key,
+        normal=key,
+        bold=key,
+        italic=key,
+        boldItalic=key)
 
-    
+
 class ExportDocument:
+
     def __init__(self, records, Lang):
         self.records, self.Lang = records, Lang
         styles = getSampleStyleSheet()
-        styles.add(ParagraphStyle(name='Justify', wordWrap=True))       
-        styles.add(ParagraphStyle(name='Pre', wordWrap=True, fontName=FONT_FAMILY, fontSize=FONT_SIZE['rightpane'], spaceAfter=FONT_SIZE['rightpane']))       
+        styles.add(ParagraphStyle(name='Justify', wordWrap=True))
+        styles.add(
+            ParagraphStyle(
+                name='Pre',
+                wordWrap=True,
+                fontName=FONT_FAMILY,
+                fontSize=FONT_SIZE['rightpane'],
+                spaceAfter=FONT_SIZE['rightpane']))
         self.style = styles['Justify']
         self.style_pre = styles['Pre']
+
     def doExport(self, filename):
-        frameTemplate = reportlab.platypus.Frame(\
+        frameTemplate = reportlab.platypus.Frame(
             0, 0, A4_LANDSCAPE_W, A4_LANDSCAPE_H,
             leftPadding=A5_MARGIN_X, bottomPadding=A5_MARGIN_Y,
             rightPadding=A5_MARGIN_X, topPadding=A5_MARGIN_Y
-            )
+        )
         pageTemplate = reportlab.platypus.PageTemplate(frames=[frameTemplate])
-        docTemplate = reportlab.platypus.BaseDocTemplate(filename, pagesize=(A4_LANDSCAPE_W, A4_LANDSCAPE_H),\
-            pageTemplates=[pageTemplate],\
-            showBoundary=1,\
-            leftMargin=0,\
-            rightMargin=0,\
-            topMargin=0,\
-            bottomMargin=0,\
-            allowSplitting=1,\
+        docTemplate = reportlab.platypus.BaseDocTemplate(
+            filename,
+            pagesize=(
+                A4_LANDSCAPE_W,
+                A4_LANDSCAPE_H),
+            pageTemplates=[pageTemplate],
+            showBoundary=1,
+            leftMargin=0,
+            rightMargin=0,
+            topMargin=0,
+            bottomMargin=0,
+            allowSplitting=1,
             _pageBreakQuick=1)
-      
+
         story = []
         for i in xrange(0, len(self.records), 2):
             e = None
-            if i + 1 < len(self.records): e = self.records[i + 1]
+            if i + 1 < len(self.records):
+                e = self.records[i + 1]
             story.append(self.mainTable(self.records[i], e))
             story.append(reportlab.platypus.PageBreak())
 
         docTemplate.build(story)
-        
-    def subscript(self,  left,  right):
-        t = reportlab.platypus.Table([[left, right]],\
-            colWidths=[4*FONT_SIZE['chess'],  4*FONT_SIZE['chess']],
-            rowHeights=[None]
-)
-        t.setStyle(reportlab.platypus.TableStyle([\
-            ('LEFTPADDING',(0,0), (1,0), 0),
-            ('RIGHTPADDING',(0,0),(1,0), 0),
-            ('TOPPADDING',(0,0),(1,0), FONT_SIZE['subscript']),
-            ('ALIGN', (0,0), (0,0), 'LEFT'),
-            ('ALIGN', (1,0), (1,0), 'RIGHT'), 
-            ('FACE', (0,0), (1,0), FONT_FAMILY),
-            ('SIZE', (0,0), (1,0), FONT_SIZE['subscript'])
-             ]))
+
+    def subscript(self, left, right):
+        t = reportlab.platypus.Table([[left, right]],
+                                     colWidths=[4 * FONT_SIZE['chess'], 4 * FONT_SIZE['chess']],
+                                     rowHeights=[None]
+                                     )
+        t.setStyle(reportlab.platypus.TableStyle([
+            ('LEFTPADDING', (0, 0), (1, 0), 0),
+            ('RIGHTPADDING', (0, 0), (1, 0), 0),
+            ('TOPPADDING', (0, 0), (1, 0), FONT_SIZE['subscript']),
+            ('ALIGN', (0, 0), (0, 0), 'LEFT'),
+            ('ALIGN', (1, 0), (1, 0), 'RIGHT'),
+            ('FACE', (0, 0), (1, 0), FONT_FAMILY),
+            ('SIZE', (0, 0), (1, 0), FONT_SIZE['subscript'])
+        ]))
         return t
-    
+
     def mainTable(self, e1, e2):
-        w_left = 8*FONT_SIZE['chess']
-        w_right = (A4_LANDSCAPE_W - 4*A5_MARGIN_X - 2*w_left - 2*AUX_X_MARGIN)/2
+        w_left = 8 * FONT_SIZE['chess']
+        w_right = (A4_LANDSCAPE_W - 4 * A5_MARGIN_X -
+                   2 * w_left - 2 * AUX_X_MARGIN) / 2
         t = reportlab.platypus.Table(
-            [[self.leftTop(e1), '', '', '', self.leftTop(e2), '',  ''],
-            [self.leftBottom(e1), '', self.rightBottom(e1), '', self.leftBottom(e2), '', self.rightBottom(e2)]],
-            colWidths=[w_left, AUX_X_MARGIN, w_right, 2*A5_MARGIN_X, w_left, AUX_X_MARGIN, w_right],
+            [[self.leftTop(e1), '', '', '', self.leftTop(e2), '', ''],
+             [self.leftBottom(e1), '', self.rightBottom(e1), '', self.leftBottom(e2), '', self.rightBottom(e2)]],
+            colWidths=[w_left, AUX_X_MARGIN, w_right, 2 * A5_MARGIN_X, w_left, AUX_X_MARGIN, w_right],
             rowHeights=[None, None]
-            )
-        t.setStyle(reportlab.platypus.TableStyle([\
-            ('VALIGN', (0,0), (-1,0), 'BOTTOM'),
-            ('VALIGN', (0,1), (-1,1), 'TOP')
-             ]))
+        )
+        t.setStyle(reportlab.platypus.TableStyle([
+            ('VALIGN', (0, 0), (-1, 0), 'BOTTOM'),
+            ('VALIGN', (0, 1), (-1, 1), 'TOP')
+        ]))
         return t
-        
+
     def leftTop(self, e):
         if e is None:
             return ''
-        return reportlab.platypus.Paragraph(\
+        return reportlab.platypus.Paragraph(
             '<font face="%s" size=%d>%s</font><br/>' %
-                (FONT_FAMILY, FONT_SIZE['header'], ExportDocument.header(e, self.Lang)),
-                self.style
-            )
+            (FONT_FAMILY, FONT_SIZE['header'], ExportDocument.header(
+                e, self.Lang)), self.style)
+
     def leftBottom(self, e):
         story = []
         if e is None:
             return story
         b = model.Board()
-        if e.has_key('algebraic'):
+        if 'algebraic' in e:
             b.fromAlgebraic(e['algebraic'])
         x = unicode(self.board2Html(b).decode("ISO-8859-1"))
-        story.append(BorderedParagraph('<para autoLeading="max">'+x+'</para>', self.style))
+        story.append(
+            BorderedParagraph(
+                '<para autoLeading="max">' +
+                x +
+                '</para>',
+                self.style))
         s_left = ''
-        if e.has_key('stipulation'):
+        if 'stipulation' in e:
             s_left = e['stipulation']
         story.append(self.subscript(s_left, b.getPiecesCount()))
-        story.append(reportlab.platypus.Paragraph(\
-            '<font face="%s" size=%d>%s</font>' % (
-                FONT_FAMILY,
-                FONT_SIZE['footer'],
-                ExportDocument.solver(e, self.Lang) + '<br/>' + ExportDocument.legend(b)
-                ), self.style
-            ))
+        story.append(
+            reportlab.platypus.Paragraph(
+                '<font face="%s" size=%d>%s</font>' %
+                (FONT_FAMILY,
+                 FONT_SIZE['footer'],
+                 ExportDocument.solver(
+                     e,
+                     self.Lang) +
+                    '<br/>' +
+                    ExportDocument.legend(b)),
+                self.style))
         return story
-        
+
     def rightBottom(self, e):
         story = []
         if e is None:
             return story
         parts = []
-        if e.has_key('solution'):
-            story.append(reportlab.platypus.Preformatted(wrapParagraph(e['solution'],  50), self.style_pre))
-        if e.has_key('keywords'):
+        if 'solution' in e:
+            story.append(
+                reportlab.platypus.Preformatted(
+                    wrapParagraph(
+                        e['solution'],
+                        50),
+                    self.style_pre))
+        if 'keywords' in e:
             parts.append('<i>' + ', '.join(e['keywords']) + '</i>')
-        if e.has_key('comments'):
+        if 'comments' in e:
             parts.append('<br/>'.join(e['comments']))
-        story.append(reportlab.platypus.Paragraph(\
+        story.append(reportlab.platypus.Paragraph(
             '<font face="%s" size=%d>%s</font>' % (
                 FONT_FAMILY,
                 FONT_SIZE['rightpane'],
                 '<br/><br/>'.join(parts)
-                ), self.style
-            ))
+            ), self.style
+        ))
         return story
-        
-    def header(e, Lang): 
+
+    def header(e, Lang):
         parts = []
-        if(e.has_key('authors')):
+        if('authors' in e):
             parts.append("<b>" + "<br/>".join(e['authors']) + "</b>")
         if(model.notEmpty(e, 'source')):
             s = "<i>" + e['source'] + "</i>"
@@ -199,45 +252,50 @@ class ExportDocument:
             parts.append(d.toStringInLang(Lang))
         return ExportDocument.escapeHtml("<br/>".join(parts))
     header = staticmethod(header)
-    
+
     def solver(e, Lang):
         parts = []
         if(model.notEmpty(e, 'intended-solutions')):
             if '.' in e['intended-solutions']:
                 parts.append(e['intended-solutions'])
             else:
-                parts.append(e['intended-solutions'] + " " + Lang.value('EP_Intended_solutions_shortened'))
-        if(e.has_key('options')):
+                parts.append(
+                    e['intended-solutions'] +
+                    " " +
+                    Lang.value('EP_Intended_solutions_shortened'))
+        if('options' in e):
             parts.append("<b>" + "<br/>".join(e['options']) + "</b>")
-        if(e.has_key('twins')):
+        if('twins' in e):
             parts.append(model.createPrettyTwinsText(e))
         return ExportDocument.escapeHtml("<br/>".join(parts))
     solver = staticmethod(solver)
-    
+
     def legend(board):
         legend = board.getLegend()
         if len(legend) == 0:
             return ''
-        return ExportDocument.escapeHtml("<br/>".join([", ".join(legend[k]) + ': ' + k for k in legend.keys()]))
+        return ExportDocument.escapeHtml(
+            "<br/>".join([", ".join(legend[k]) + ': ' + k for k in legend.keys()]))
     legend = staticmethod(legend)
 
     def escapeHtml(str):
-        str = str.replace('&', '&amp;');
+        str = str.replace('&', '&amp;')
         # todo: more replacements
-        return str 
+        return str
     escapeHtml = staticmethod(escapeHtml)
-        
-    def board2Html(self,  board):
+
+    def board2Html(self, board):
         lines = []
         spans, fonts, prevfont = [], [], 'z'
         for i in xrange(64):
-            font, char = 'd', ["\xA3", "\xA4"][((i>>3) + (i%8))%2]
+            font, char = 'd', ["\xA3", "\xA4"][((i >> 3) + (i % 8)) % 2]
             if not board.board[i] is None:
                 glyph = board.board[i].toFen()
                 if len(glyph) > 1:
                     glyph = glyph[1:-1]
                 font = model.FairyHelper.fontinfo[glyph]['family']
-                char = model.FairyHelper.fontinfo[glyph]['chars'][((i>>3) + (i%8))%2]
+                char = model.FairyHelper.fontinfo[glyph][
+                    'chars'][((i >> 3) + (i % 8)) % 2]
             if font != prevfont:
                 fonts.append(font)
                 spans.append([char])
@@ -246,25 +304,36 @@ class ExportDocument:
                 spans[-1].append(char)
             if i != 63 and i % 8 == 7:
                 spans[-1].append("<br/>")
-        return ''.join([\
-            '<font face="%s" size=%d>%s</font>' % (CHESS_FONTS[fonts[i]][0], FONT_SIZE['chess'], ''.join(spans[i])) 
-            for i in xrange(len(fonts))
-            ])
+        return ''.join(
+            [
+                '<font face="%s" size=%d>%s</font>' %
+                (CHESS_FONTS[
+                    fonts[i]][0],
+                    FONT_SIZE['chess'],
+                    ''.join(
+                    spans[i])) for i in xrange(
+                    len(fonts))])
+
 
 class BorderedParagraph(reportlab.platypus.Paragraph):
-    def __init__(self,  str,  style):
+
+    def __init__(self, str, style):
         reportlab.platypus.Paragraph.__init__(self, str, style)
+
     def draw(self):
         reportlab.platypus.Paragraph.draw(self)
         # -5 is deep magic, maybe it has something to do with platypus.Paragraph::_spaceBefore or such
-        self.canv.rect(-1, -5, 2+8*FONT_SIZE['chess'], 2+8*FONT_SIZE['chess'], stroke=1, fill=0)
-        
-def wrapParagraph(str,  w):
+        self.canv.rect(-1, -5, 2 + 8 *
+                       FONT_SIZE['chess'], 2 + 8 * FONT_SIZE['chess'], stroke=1, fill=0)
+
+
+def wrapParagraph(str, w):
     lines = []
     for line in str.split("\n"):
         lines.extend(wrapNice(removeInlineIdents(line), w))
     return "\n".join(lines)
-    
+
+
 def wrapNice(line, w):
     if len(line) < w:
         return [line]
@@ -281,11 +350,11 @@ def wrapNice(line, w):
                 retval = [' '.join(cur_line_words)]
                 retval.extend(wrapNice(' '.join(words[i:]), w))
                 return retval
-            else: # rough wrap
+            else:  # rough wrap
                 slice_size = w - total - 1
                 cur_line_words.append(words[i][0:slice_size])
                 retval = [' '.join(cur_line_words)]
-                tail = ' '.join([words[i][slice_size:]]+words[i+1:])
+                tail = ' '.join([words[i][slice_size:]] + words[i + 1:])
                 retval.extend(wrapNice(tail, w))
                 return retval
         elif new_total == w:
@@ -294,15 +363,17 @@ def wrapNice(line, w):
             if i == len(words) - 1:
                 return retval
             else:
-                retval.extend(wrapNice(' '.join(words[i+1:]), w))
+                retval.extend(wrapNice(' '.join(words[i + 1:]), w))
                 return retval
         else:
             cur_line_words.append(words[i])
             total = new_total
     return [' '.join(cur_line_words)]
-        
+
+
 def removeInlineIdents(line):
     outer = 0
     while outer < len(line) and line[outer] == ' ':
         outer = outer + 1
-    return line[0:outer] + ' '.join([x for x in line.strip().split(' ') if x != ''])
+    return line[0:outer] + \
+        ' '.join([x for x in line.strip().split(' ') if x != ''])

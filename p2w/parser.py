@@ -11,6 +11,7 @@ def p_empty(p):
 # lex & yacc transform the popeye output into a list of Nodes
 # the final rule - BuildTree - transforms this list into a tree
 
+
 def p_BuildTree(t):
     'BuildTree: Solution'
     nodelist = t[1]
@@ -36,7 +37,7 @@ def p_Solution_Comments(t):
 
 def p_Solution_empty(t):
     'Solution: empty'
-    t[0] = [Node()] # empty input
+    t[0] = [Node()]  # empty input
 
 
 def p_TwinList(t):

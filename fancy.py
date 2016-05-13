@@ -5,28 +5,29 @@ import yaml
 import model
 
 # order matters, copied from the end of the binary fancy.exe (v2.9)
-FANCY_PIECES = [\
-    '15', '16', '24', '25', '35', '37', 'al', 'am', 'an', 'ao', 'ar',\
-    'b', 'bh', 'bk', 'bl', 'bp', 'br', 'bs', 'bt', 'bu', 'c', 'ca', 'cg',\
-    'ch', 'cr', 'ct', 'cy', 'da', 'dg', 'dr', 'ds', 'du', 'ea', 'eh', 'ek', 'em',\
-    'eq', 'fe', 'fr', 'g', 'g2', 'g3', 'gh', 'gi', 'gl', 'gn', 'gr', 'gt', 'ha',\
-    'k', 'ka', 'kh', 'l', 'lb', 'le', 'li', 'ln', 'lr', 'm', 'ma', 'mo',\
-    'n', 'nd', 'ne', 'nh', 'o', 'oa', 'ok', 'or', 'p', 'pa', 'pr', 'q',\
-    'r', 'rb', 'rf', 'rh', 'rl', 'rn', 'ro', 'rp', 'rr', 's', 'si', 'sk',\
-    'sp', 'sq', 'ss', 'sw', 'tr', 'uu', 'va', 'wa', 'we', 'wr', 'z', 'zh',\
-    'zr', 'ag', 'be', 'bi', 'bm', 'bw', 'do', 'et', 'f', 'mg', 'ml', 'mm',\
-    'na', 'nl', 'ra', 're', 'rm', 'rw', 'so', '36', 'b1', 'b2', 'b3', 'bo', 'cp',\
-    'qe', 'qf', 'qq', 'rt', 'pp', 'rk', 'ze'\
-    ]
-FANCY_SPECS = ['Chameleon', 'Jigger', 'Kamikaze', 'Paralysing', \
-    'Royal', 'Volage', 'Beamtet', 'Functionary', 'HalfNeutral', \
-    'HurdleColourChanging', 'Protean', 'Magic', 'Uncapturable']
-    
+FANCY_PIECES = [
+    '15', '16', '24', '25', '35', '37', 'al', 'am', 'an', 'ao', 'ar',
+    'b', 'bh', 'bk', 'bl', 'bp', 'br', 'bs', 'bt', 'bu', 'c', 'ca', 'cg',
+    'ch', 'cr', 'ct', 'cy', 'da', 'dg', 'dr', 'ds', 'du', 'ea', 'eh', 'ek', 'em',
+    'eq', 'fe', 'fr', 'g', 'g2', 'g3', 'gh', 'gi', 'gl', 'gn', 'gr', 'gt', 'ha',
+    'k', 'ka', 'kh', 'l', 'lb', 'le', 'li', 'ln', 'lr', 'm', 'ma', 'mo',
+    'n', 'nd', 'ne', 'nh', 'o', 'oa', 'ok', 'or', 'p', 'pa', 'pr', 'q',
+    'r', 'rb', 'rf', 'rh', 'rl', 'rn', 'ro', 'rp', 'rr', 's', 'si', 'sk',
+    'sp', 'sq', 'ss', 'sw', 'tr', 'uu', 'va', 'wa', 'we', 'wr', 'z', 'zh',
+    'zr', 'ag', 'be', 'bi', 'bm', 'bw', 'do', 'et', 'f', 'mg', 'ml', 'mm',
+    'na', 'nl', 'ra', 're', 'rm', 'rw', 'so', '36', 'b1', 'b2', 'b3', 'bo', 'cp',
+    'qe', 'qf', 'qq', 'rt', 'pp', 'rk', 'ze'
+]
+FANCY_SPECS = ['Chameleon', 'Jigger', 'Kamikaze', 'Paralysing',
+               'Royal', 'Volage', 'Beamtet', 'Functionary', 'HalfNeutral',
+               'HurdleColourChanging', 'Protean', 'Magic', 'Uncapturable']
+
+
 def fancyCodeToPiece(code):
     if code <= 16:
         fancy = 'prsbqkgn'
         color = ['black', 'white'][code % 2]
-        return model.Piece(fancy[(code-1) >> 1], color, [])
+        return model.Piece(fancy[(code - 1) >> 1], color, [])
     try:
         color = ['white', 'black', 'neutral'][(code % 100) - 17]
         name = FANCY_PIECES[((code // 100) % 1000) - 1]
@@ -36,7 +37,8 @@ def fancyCodeToPiece(code):
         return model.Piece(name, color, specs)
     except:
         return model.Piece('du', 'black', [])
-    
+
+
 def parseTwins(lines):
     twins = {}
     id = 'b'
@@ -48,6 +50,7 @@ def parseTwins(lines):
         twins[id] = (' '.join((line.split(' '))[1:])).strip()
         id = chr(ord(id) + 1)
     return twins
+
 
 def parseConditions(words):
     conditions = []
@@ -67,13 +70,15 @@ def parseConditions(words):
         conditions.append(' '.join(acc))
     return conditions
 
+
 def isConditionStartWord(word):
     word = word.lower()
     for c in model.FairyHelper.conditions:
         if len(c) >= len(word) and word == (c[0:len(word)]).lower():
             return True
     return False
-    
+
+
 def readCvv(fileName, encoding):
     h = open(unicode(fileName), 'r')
     contents = "\n".join([x.strip() for x in h.readlines()])
@@ -84,7 +89,7 @@ def readCvv(fileName, encoding):
         lines = chunk.strip().split("\n")
         if len(lines) < 2:
             continue
-        # removing Dg[x]=new Array line 
+        # removing Dg[x]=new Array line
         lines = lines[1:]
         # removing trailing semicolon
         lines[-1] = lines[-1][:-1]
@@ -92,13 +97,13 @@ def readCvv(fileName, encoding):
         chunk = ''.join(lines)
         chunk = '[' + chunk[1:-1] + ']'
         e = yaml.load(chunk)
-        
+
         # creating yacpdb-like entry
         entry = {}
         board = model.Board()
         imitators = []
         for i in xrange(64):
-            code = e[i>>3][i%8]
+            code = e[i >> 3][i % 8]
             if code:
                 if code == 20:
                     imitators.append(model.idxToAlgebraic(i))
@@ -121,6 +126,6 @@ def readCvv(fileName, encoding):
             entry['options'].extend(parseConditions(stip_cond[1:]))
         if len(extra) > 1:
             entry['twins'] = parseTwins(extra[1:])
-        
+
         entries.append(entry)
     return entries

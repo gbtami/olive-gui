@@ -1,10 +1,10 @@
 ﻿#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# pbm2popeye 0.1.0 Copyright 2008 
+# pbm2popeye 0.1.0 Copyright 2008
 # Author: Dmitri Turevski <dmitri.turevski@gmail.com>
-# 
+#
 # This program is distributed under the terms of the GNU General Public License
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -22,13 +22,17 @@ import model
 # may be altered from outside
 PBM_ENCODING = "ISO-8859-1"
 
+
 class PbmEntries:
+
     def __init__(self, file):
         self.file = file
         self.num_entries = read_int(file, 'H') + 1
         self.entries_read = 0
+
     def __iter__(self):
         return self
+
     def next(self):
         if self.num_entries == self.entries_read:
             raise StopIteration
@@ -36,7 +40,8 @@ class PbmEntries:
         self.entries_read = self.entries_read + 1
         return r.to_yacpdb_struct()
 
-def readPbm(filename): # throws (IOError)
+
+def readPbm(filename):  # throws (IOError)
     input = open(filename)
     records = []
     try:
@@ -46,16 +51,18 @@ def readPbm(filename): # throws (IOError)
             r = Record(input)
             records.append(r.to_yacpdb_struct())
             #r.dump(i != num_entries - 1)
-    #except IOError, IndexError:
+    # except IOError, IndexError:
     except:
         raise
-        
+
     input.close()
+
 
 def read_int(file, decl):
     v = array.array(decl)
     v.fromfile(file, 1)
     return v[0]
+
 
 def read_string(file):
     offset = read_int(file, 'L')
@@ -65,6 +72,7 @@ def read_string(file):
     file.seek(cur_pos)
     return unicode(string.decode(PBM_ENCODING))
 
+
 def byte2piece(byte):
     if byte == 32:
         return ''
@@ -73,46 +81,50 @@ def byte2piece(byte):
         return '?'
     return 'RQBSPK???kpsbqr'[byte]
 
+
 def byte2square(byte):
     byte = byte - 32
     return 'abcdefgh'[byte % 8] + '87654321'[byte // 8]
 
+
 def bytes2stipulation(byte1, byte2):
     #binary = lambda i, c = (lambda i, c: i and (c(i >> 1, c) + str(i & 1)) or ''): c(i, c)
-    #print binary(byte1), byte2
-    
+    # print binary(byte1), byte2
+
     type = ['', 'h', 's', 'r'][byte1 % 4]
     type = type + ['#', '='][(byte1 & (1 << 4)) != 0]
-    if byte1 & (1 << 3) :
+    if byte1 & (1 << 3):
         type = 'Ser-' + type
     num_moves = byte2
-    if byte1 & (1 << 6) :
+    if byte1 & (1 << 6):
         num_moves = str(num_moves - 1) + '.5'
-    
+
     return type + str(num_moves), byte1 & (1 << 5)
 
+
 class Record:
+
     def __init__(self, file):
-        read_int(file, 'H') # skip id
+        read_int(file, 'H')  # skip id
         self.stipulation, self.is_maximummer = \
             bytes2stipulation(read_int(file, 'B'), read_int(file, 'B'))
-        
+
         self.info = {}
-        for field in ['author', 'source', 'distinction', 'comments', 'text', \
-            'twins', 'extra']:
+        for field in ['author', 'source', 'distinction', 'comments', 'text',
+                      'twins', 'extra']:
             self.info[field] = read_string(file)
-            
+
         self.comments = []
         for field in ['comments', 'text', 'extra']:
             if self.info[field]:
                 for line in self.info[field].split("\n"):
                     self.comments.append(field + ': ' + line.strip())
-        
+
         self.parse_twins()
-        
+
         self.fen, blanks = '', 0
         for i in xrange(64):
-            if((i > 0) and (i % 8 == 0)): # new row
+            if((i > 0) and (i % 8 == 0)):  # new row
                 self.fen = self.fen + ['', str(blanks)][blanks > 0]
                 self.fen = self.fen + "/"
                 blanks = 0
@@ -135,18 +147,18 @@ class Record:
 
         twins = []
         for i in xrange(len(self.info['twins']) // 4):
-            #for j in xrange(4):
+            # for j in xrange(4):
             #    print ord(self.info['twins'][1 + 4*i + j]) - 32,
-            #print
-            combined = (ord(self.info['twins'][1 + 4*i]) & (1<<6)) != 0
+            # print
+            combined = (ord(self.info['twins'][1 + 4 * i]) & (1 << 6)) != 0
 
             type, square1, square2, piece  = \
-                ord(self.info['twins'][1 + 4*i]) & 31, \
-                byte2square(ord(self.info['twins'][1 + 4*i + 1])), \
-                byte2square(ord(self.info['twins'][1 + 4*i + 2])), \
-                byte2piece(ord(self.info['twins'][1 + 4*i + 3]))
+                ord(self.info['twins'][1 + 4 * i]) & 31, \
+                byte2square(ord(self.info['twins'][1 + 4 * i + 1])), \
+                byte2square(ord(self.info['twins'][1 + 4 * i + 2])), \
+                byte2piece(ord(self.info['twins'][1 + 4 * i + 3]))
             piece = ['white', 'black'][piece.lower() == piece] + ' ' + piece
-            #print type, square1, square2, piece
+            # print type, square1, square2, piece
             if 0 == type:
                 self.is_zero = False
             elif 1 == type:
@@ -156,8 +168,8 @@ class Record:
             elif 3 == type:
                 twins.append('add %s%s' % (piece, square1))
             elif 4 == type:
-                twins.append('remove %s add %s%s' % \
-                    (square1, piece, square2))
+                twins.append('remove %s add %s%s' %
+                             (square1, piece, square2))
             elif 5 == type:
                 twins.append('exchange %s %s' % (square1, square2))
             elif 6 == type:
@@ -169,16 +181,16 @@ class Record:
             elif 9 == type:
                 twins.append('shift %s %s' % (square1, square2))
             elif 10 == type:
-                self.comments.append('unsupported twin: torus shift %s %s' %\
-                    (square1, square2))
+                self.comments.append('unsupported twin: torus shift %s %s' %
+                                     (square1, square2))
             elif 11 == type:
                 twins.append('mirror a1<-->a8')
             elif 12 == type:
                 twins.append('mirror a1<-->h1')
             elif 13 == type:
-                stipulation, is_maximummer = bytes2stipulation(\
-                        ord(self.info['twins'][1 + 4*i + 1]) - 32, \
-                        ord(self.info['twins'][1 + 4*i + 2]) - 32 )
+                stipulation, is_maximummer = bytes2stipulation(
+                    ord(self.info['twins'][1 + 4 * i + 1]) - 32,
+                    ord(self.info['twins'][1 + 4 * i + 2]) - 32)
                 twin = []
                 if stipulation != self.stipulation:
                     twin.append('stipulation ' + stipulation)
@@ -193,12 +205,13 @@ class Record:
                 twins.append('PolishType')
             elif 16 == type:
                 self.is_duplex = True
-            
+
             if not combined and twins:
                 self.twins.append(' '.join(twins))
                 twins = []
+
     def to_yacpdb_struct(self):
-        r = {'options':[], 'conditions':[]}
+        r = {'options': [], 'conditions': []}
         if self.info['author']:
             r['authors'] = self.info['author'].split(';')
         if self.info['source']:
@@ -239,7 +252,7 @@ class Record:
             for i, twin in enumerate(self.twins):
                 r['twins'][chr(ord('a') + i + offset)] = twin
         return copy.deepcopy(r)
-        
+
     def dump(self, with_separator):
         print
         if self.info['author']:

@@ -1,6 +1,7 @@
 #import re, yaml, os, subprocess, tempfile, array, copy, sys
 
-import yaml, yacpdb
+import yaml
+import yacpdb
 
 # todo:
 # - dual underpromotions Q+R Q+B
@@ -45,19 +46,18 @@ problem = yaml.load("""---
       - Indefinite first name. This problem may be by Angelo or by Alberto.""")
 
 
-
 problem = yaml.load("""---
     ash: ebbd14c5b1875f291c2289f4d52770c2
-    algebraic: 
+    algebraic:
       white: [Ka3, Rg4, Pe2, Pb2]
       black: [Kc5, Sg1]
     stipulation: "h#3"
-    twins: 
+    twins:
       b: PolishType
 """)
 problem = yaml.load("""---
     ash: ebbd14c5b1875f291c2289f4d52770c2
-    algebraic: 
+    algebraic:
       white: [Kf4, Qg4, Rd1, Rc2, Pc6, Pb7]
       black: [Kc7]
     stipulation: "#2"
@@ -65,7 +65,7 @@ problem = yaml.load("""---
 
 problem = yaml.load("""---
     ash: 14af7da3a1e7e0e36af1095378977c86
-    algebraic: 
+    algebraic:
       white: [Ka5, Bf3, Se2, Pf4, Pc2]
       black: [Kc4, Pf7, Pf5, Pd7, Pc5, Pa6]
     stipulation: "#4"
@@ -73,7 +73,7 @@ problem = yaml.load("""---
 
 problem = yaml.load("""---
     ash: ebbd14c5b1875f291c2289f4d52770c2
-    algebraic: 
+    algebraic:
       white: [Kf4, Qg4, Rd1, Rc2, Pc6, Pb7]
       black: [Kc7]
     stipulation: "#2"
@@ -81,7 +81,7 @@ problem = yaml.load("""---
 
 problem = yaml.load("""---
     ash: 14af7da3a1e7e0e36af1095378977c86
-    algebraic: 
+    algebraic:
       white: [Ka5, Bf3, Se2, Pf4, Pc2]
       black: [Kc4, Pf7, Pf5, Pd7, Pc5, Pa6]
     stipulation: "#4"
@@ -90,7 +90,7 @@ problem = yaml.load("""---
 
 problem = yaml.load("""---
     ash: 14af7da3a1e7e0e36af1095378977c86
-    algebraic: 
+    algebraic:
       white: [Kc5, Bc1, Pd2, Pb2]
       black: [Kc7, Qd8, Rc8, Rb7, Be8, Pf6, Pf4, Pd4, Pd3, Pb4, Pb3]
     stipulation: "h#5"
@@ -98,12 +98,11 @@ problem = yaml.load("""---
 
 problem = yaml.load("""---
     ash: 14af7da3a1e7e0e36af1095378977c86
-    algebraic: 
+    algebraic:
       white: [Kd2, Rf5, Bg4, Pg2, Pb3]
       black: [Ke4]
     stipulation: "#4"
 """)
-
 
 
 result = yacpdb.process(problem)

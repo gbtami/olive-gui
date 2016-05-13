@@ -1,7 +1,14 @@
-import re, yaml, os, subprocess, tempfile, array, copy, sys
+import re
+import yaml
+import os
+import subprocess
+import tempfile
+import array
+import copy
+import sys
 
 # regular expressions to parse popeye options
-RE_PY_OPTIONS = [re.compile('^'+expr+'$') for expr in [
+RE_PY_OPTIONS = [re.compile('^' + expr + '$') for expr in [
     "Defence [1-9][0-9]*",
     "SetPlay",
     "Threat [1-9][0-9]*",
@@ -16,7 +23,7 @@ RE_PY_OPTIONS = [re.compile('^'+expr+'$') for expr in [
     "Hole [a-h][1-8]",
     "Quodlibet"]]
 
-RE_PY_TWINS = [re.compile('^'+expr) for expr in [
+RE_PY_TWINS = [re.compile('^' + expr) for expr in [
     "(?P<command>Stipulation)\s+(?P<args>\S+)",
     "(?P<command>Condition)\s+(?P<args>\S+)",
     "(?P<command>Move)\s+(?P<args>[a-h][1-8]\s+[a-h][1-8])",
@@ -32,24 +39,29 @@ RE_PY_CONT = re.compile('^Cont(inued)?')
 
 # regular expressions to parse popeye output
 RE_PY_MOVEHEAD = re.compile('^(?P<moveno>[0-9]+)(?P<side>\.+)')
-RE_PY_REGULARMOVE = re.compile('^(?P<dep_piece>[KQRBS]?)(?P<dep_square>[a-h][1-8])(?P<cap_mod>[\-\*])(?P<arr_square>[a-h][1-8])')
-RE_PY_PROMOTION = re.compile('^(?P<dep_square>[a-h][1-8])(?P<cap_mod>[\-\*])(?P<arr_square>[a-h][1-8])=(<promotion>[QRBS])')
+RE_PY_REGULARMOVE = re.compile(
+    '^(?P<dep_piece>[KQRBS]?)(?P<dep_square>[a-h][1-8])(?P<cap_mod>[\-\*])(?P<arr_square>[a-h][1-8])')
+RE_PY_PROMOTION = re.compile(
+    '^(?P<dep_square>[a-h][1-8])(?P<cap_mod>[\-\*])(?P<arr_square>[a-h][1-8])=(<promotion>[QRBS])')
 RE_PY_CASTLING = re.compile('^(?P<castling>0-0(-0)?)')
-RE_PY_EPCAPTURE = re.compile('^(?P<dep_square>[a-h][1-8])\*(?P<arr_square>[a-h][1-8]) ep\.')
+RE_PY_EPCAPTURE = re.compile(
+    '^(?P<dep_square>[a-h][1-8])\*(?P<arr_square>[a-h][1-8]) ep\.')
 RE_PY_MOVETAIL = re.compile('^(?P<checkstalemate>[\+=#])?( +)?(?P<mark>[!?]?)')
 RE_PY_TWINSTART = re.compile('^(?P<twin_id>[a-z])\)(?P<twin_descr>.*)')
 RE_PY_TRASH = re.compile('^\s*(zugzwang\.)|(threat:)|(but)\s*')
 
+
 def create_popeye_input(problem, sstip):
     lines = ["BeginProblem"]
     # stipulation
-    lines.append(["Stipulation ", "SStipulation "][sstip] + problem['stipulation'])
+    lines.append(["Stipulation ", "SStipulation "]
+                 [sstip] + problem['stipulation'])
     #options and conditions
     options, conditions = ['Variation', 'NoBoard'], []
-    if problem.has_key('options'):
+    if 'options' in problem:
         for option in problem['options']:
             for pattern in RE_PY_OPTIONS:
-                if pattern.match(option) :
+                if pattern.match(option):
                     options.append(option)
                     break
             else:
@@ -60,12 +72,18 @@ def create_popeye_input(problem, sstip):
     # pieces
     lines.append("Pieces")
     for color in ['white', 'black', 'neutral']:
-        if problem['algebraic'].has_key(color):
-            lines.append("  " + color + " " + " ".join(problem['algebraic'][color]))
+        if color in problem['algebraic']:
+            lines.append(
+                "  " +
+                color +
+                " " +
+                " ".join(
+                    problem['algebraic'][color]))
     # twins
-    if problem.has_key('twins'):
+    if 'twins' in problem:
         for key in sorted(problem['twins'].keys()):
-            lines.append(['Twin', 'Zero'][key == 'a'] + " " + problem['twins'][key])
-    
+            lines.append(['Twin', 'Zero'][key == 'a'] +
+                         " " + problem['twins'][key])
+
     lines.append("EndProblem")
     return "\n".join(lines)

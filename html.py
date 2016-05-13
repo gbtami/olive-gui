@@ -1,13 +1,15 @@
 STARTTAG, ENDTAG = "<!--%s-->", "<!--/%s-->"
 SCALAR = "{{%s}}"
 
+
 class Node:
+
 	def __init__(self, name, values):
         self.name = name
         self.values = values
         self.collection = {}
         self.template = ''
-        
+
     def add(self, name, value):
         if isinstance(value, dict):
             if not self.collection.has_key(name):
