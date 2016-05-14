@@ -1,3 +1,5 @@
+import os
+
 from PyQt4 import QtGui, QtCore
 
 
@@ -247,3 +249,28 @@ class TwinsDialog(OkCancelDialog):
 
     def getTwins(self):
         return self.mainWidget.getTwins()
+
+
+class SelectFileWidget(QtGui.QLineEdit):
+
+    def __init__(self, title, value, onChanged):
+        super(SelectFileWidget, self).__init__()
+        self.title = title
+        self.value = value;
+        self.onChanged = onChanged
+        self.setText(value)
+        self.setReadOnly(True)
+
+    def mousePressEvent(self, e):
+        fileName = QtGui.QFileDialog.getOpenFileName(self, self.title, os.path.dirname(self.value))
+        if not fileName:
+            return
+        self.value = unicode(fileName)
+        self.setText(self.value)
+        self.onChanged(self.value)
+
+    def setText(self, text):
+        maxLen = 40
+        if len(text) > maxLen:
+            text = text[:maxLen/2] + ' ... ' + text[-maxLen/2:]
+        return super(SelectFileWidget, self).setText(text)

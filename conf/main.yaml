@@ -16,8 +16,4 @@ notations:
   en: [K, Q, R, B, S, P]
   fide: [K, D, T, L, S, B]
   ru: [Кр, Ф, Л, С, К, п]
-popeye-executable: {nt: PY463USR\pywin32.exe -maxmem 1G, posix: /home/dima/temp/popeye/py
-    -maxmem 2G}
-popeye-sticky-options: [Variation, NoBoard]
-popeye-stop-max-bytes: 81920
-version: 0.13.6
+version: 0.16.6

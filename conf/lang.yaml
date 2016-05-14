@@ -643,6 +643,11 @@ CHEST_Stop:
   rs: Stop
   ru: Прервать
   de: Anhalten
+Chest_Options:
+  en: Options
+  rs: Опције
+  ru: Опции
+  de: Optionen
 
 # Distinctions
 DSTN_Prize:

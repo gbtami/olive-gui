@@ -10,8 +10,8 @@ from PyQt4 import QtGui, QtCore
 
 # local
 import model
+import options
 
-CHESTCONF = {"hash": 128, "in": "input.txt", "out": "output.txt"}
 CHESTSTIPULATION = re.compile('^([sh]?)([#=])(\d+)(\.5)?$', re.IGNORECASE)
 
 
@@ -22,13 +22,6 @@ def isOrthodox(fen):
             result = False
     # print result, fen
     return result
-
-
-def hasFairyElements(current):
-    if model.hasFairyElements(current):
-        # print current['options']
-        return True
-    return False
 
 
 def checkOption(pbm, option):
@@ -70,16 +63,40 @@ class ChestView(QtGui.QSplitter):
     def initLayout(self):
         w = QtGui.QWidget()
         grid = QtGui.QGridLayout()
-        grid.addWidget(self.input, 0, 0, 1, 2)
 
-        grid.addWidget(self.btnRun, 1, 0)
-        grid.addWidget(self.btnStop, 1, 1)
+        row = 0
+        self.labelChest = QtGui.QLabel()
+        grid.addWidget(self.labelChest, row, 0, 1, 2)
+        row += 1
 
-        grid.addWidget(self.btnCompact, 2, 0)
+        pathWidget = options.SelectFileWidget(
+                self.Lang.value('TC_Chest'),
+                self.Conf.chest['path'],
+                self.onPathChanged)
+        grid.addWidget(pathWidget, row, 0, 1, 2)
+        row += 1
+
+        self.labelOptions = QtGui.QLabel()
+        grid.addWidget(self.labelOptions, row, 0)
+        self.inputOptions = QtGui.QLineEdit()
+        self.inputOptions.setText(str(self.Conf.chest['options']))
+        self.inputOptions.textChanged.connect(self.onSettingsChanged)
+        grid.addWidget(self.inputOptions, row, 1)
+        row += 1
+
+        grid.addWidget(self.input, row, 0, 1, 2)
+        row += 1
+
+        grid.addWidget(self.btnRun, row, 0)
+        grid.addWidget(self.btnStop, row, 1)
+        row += 1
+
+        grid.addWidget(self.btnCompact, row, 0)
+        row += 1
 
         # stretcher
-        grid.addWidget(QtGui.QWidget(), 2, 2)
-        grid.setRowStretch(2, 1)
+        grid.addWidget(QtGui.QWidget(), row, 2)
+        grid.setRowStretch(row, 1)
         grid.setColumnStretch(2, 1)
 
         w.setLayout(grid)
@@ -103,8 +120,8 @@ class ChestView(QtGui.QSplitter):
         self.chestProc.readyReadStandardError.connect(self.onError)
         self.chestProc.finished.connect(self.onFinished)
 
-        chest_exe = self.Conf.value('chest-executable')[os.name]
-        params = ["-r", "-LS", "-M " + str(CHESTCONF['hash'])]
+        chest_exe = self.Conf.chest['path']
+        params = self.Conf.chest['options'].split()
         params.append(self.temp_filename)
 
         self.chestProc.error.connect(self.onFailed)
@@ -152,17 +169,17 @@ class ChestView(QtGui.QSplitter):
         # TODO #2: translate messages
         # self.input.setText(self.Mainframe.model.board.toFen() + " " + self.Mainframe.model.cur()['stipulation'])
         if not CHESTSTIPULATION.match(e['stipulation'].lower()):
-            self.input.setText('Stipulation is not suported by Chest')
+            self.input.setText('Stipulation is not supported by Chest')
             self.btnRun.setEnabled(False)
             return
 
-        if isOrthodox(brd.toFen()) == False:
-            self.input.setText('Chest can solve only orthodox problems')
+        if not isOrthodox(brd.toFen()):
+            self.input.setText('Chest can only solve orthodox problems')
             self.btnRun.setEnabled(False)
             return
 
-        if hasFairyElements(e):
-            self.input.setText("Chest doesn't support fairy conditions")
+        if model.hasFairyElements(e):
+            self.input.setText("Chest doesn't support fairy elements")
             self.btnRun.setEnabled(False)
             return
 
@@ -174,22 +191,22 @@ class ChestView(QtGui.QSplitter):
         if str(
                 brd.board[56]) == 'white rook' and str(
                 brd.board[60]) == 'white king':
-            if option == False or not 'a1' in option:
+            if not option or 'a1' not in option:
                 input_str += 'cwl\n'
         if str(
                 brd.board[63]) == 'white rook' and str(
                 brd.board[60]) == 'white king':
-            if option == False or not 'h1' in option:
+            if not option or 'h1' not in option:
                 input_str += 'cws\n'
         if str(
                 brd.board[0]) == 'black rook' and str(
                 brd.board[4]) == 'black king':
-            if option == False or not 'a8' in option:
+            if not option or 'a8' not in option:
                 input_str += 'cbl\n'
         if str(
                 brd.board[7]) == 'black rook' and str(
                 brd.board[4]) == 'black king':
-            if option == False or not 'h8' in option:
+            if not option or 'h8' not in option:
                 input_str += 'cbs\n'
 
         option = checkOption(e, 'EnPassant')
@@ -239,6 +256,8 @@ class ChestView(QtGui.QSplitter):
         return retval
 
     def onLangChanged(self):
+        self.labelChest.setText(self.Lang.value('TC_Chest') + ':')
+        self.labelOptions.setText(self.Lang.value('Chest_Options') + ':')
         self.btnRun.setText(self.Lang.value('CHEST_Run'))
         self.btnStop.setText(self.Lang.value('CHEST_Stop'))
         self.btnCompact.setText('compact')  # (self.Lang.value('CHEST_Stop'))
@@ -255,6 +274,14 @@ class ChestView(QtGui.QSplitter):
         self.btnRun.setEnabled(status)
         self.btnStop.setEnabled(not status)
 
+    def onPathChanged(self, newPath):
+        self.Conf.chest['path'] = newPath
+
+    def onSettingsChanged(self):
+        try:
+            self.Conf.chest['options'] = unicode(self.inputOptions.text())
+        except Exception as e:
+            print e
 
 class OutputWidget(QtGui.QTextEdit):
 

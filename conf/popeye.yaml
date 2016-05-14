@@ -1,1 +1,4 @@
-{memory: 512, path: 'C:/Users/Дима/Downloads/olive-0.13.6/py469/pywin64.exe'}
+memory: 128
+path: C:/Users/Дима/Downloads/olive-0.13.6/py469/pywin64.exe
+sticky-options: [Variation, NoBoard]
+stop-max-bytes: 81920

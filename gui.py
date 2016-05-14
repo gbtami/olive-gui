@@ -1998,25 +1998,6 @@ class PopeyeView(QtGui.QSplitter):
         self.setActionEnabled(True)
         self.input.setActions(actions)
 
-    class PopeyePath(QtGui.QLineEdit):
-
-        def __init__(self):
-            super(PopeyeView.PopeyePath, self).__init__()
-
-        def mousePressEvent(self, e):
-            fileName = QtGui.QFileDialog.getOpenFileName(
-                    self, Lang.value('TC_Popeye'), os.path.dirname(Conf.popeye['path']))
-            if not fileName:
-                return
-            Conf.popeye['path'] = unicode(fileName)
-            self.setText(Conf.popeye['path'])
-
-        def setText(self, text):
-            maxLen = 40
-            if len(text) > maxLen:
-                text = text[:maxLen/2] + ' ... ' + text[-maxLen/2:]
-            return super(PopeyeView.PopeyePath, self).setText(text)
-
     def __init__(self):
         super(PopeyeView, self).__init__(QtCore.Qt.Horizontal)
 
@@ -2036,9 +2017,7 @@ class PopeyeView(QtGui.QSplitter):
         grid.addWidget(self.labelPopeye, row, 0)
         row +=1
 
-        self.inputPyPath = PopeyeView.PopeyePath()
-        self.inputPyPath.setText(QtCore.QString(Conf.popeye['path']))
-        self.inputPyPath.setReadOnly(True)
+        self.inputPyPath = options.SelectFileWidget(Lang.value('TC_Popeye'), Conf.popeye['path'], self.onPopeyePathChanged)
         grid.addWidget(self.inputPyPath, row, 0, 1, 2)
         row += 1
 
@@ -2114,6 +2093,9 @@ class PopeyeView(QtGui.QSplitter):
     def onMemoryChanged(self):
         try: Conf.popeye['memory'] = int(str(self.inputMemory.text()))
         except: pass
+
+    def onPopeyePathChanged(self, newPath):
+        Conf.popeye['path'] = newPath
 
     def onOptions(self):
         entry_options = []
@@ -2584,6 +2566,7 @@ class Conf:
     keywords_file = 'conf/keywords.yaml'
     zoo_file = 'conf/zoos.yaml'
     popeye_file = 'conf/popeye.yaml'
+    chest_file = 'conf/chest.yaml'
 
     def read():
 
@@ -2601,6 +2584,9 @@ class Conf:
         with open(Conf.popeye_file, 'r') as f:
             Conf.popeye = yaml.load(f)
 
+        with open(Conf.chest_file, 'r') as f:
+            Conf.chest = yaml.load(f)
+
     read = staticmethod(read)
 
     def write():
@@ -2608,6 +2594,8 @@ class Conf:
             f.write(Conf.dump(Conf.values))
         with open(Conf.popeye_file, 'w') as f:
             f.write(Conf.dump(Conf.popeye))
+        with open(Conf.chest_file, 'w') as f:
+            f.write(Conf.dump(Conf.chest))
     write = staticmethod(write)
 
     def value(v):
