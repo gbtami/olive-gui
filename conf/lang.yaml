@@ -444,6 +444,11 @@ PS_Edit:
   rs: Корекција решења
   ru: Редактировать решение 
   de: Lösung bearbeiten
+PS_Hashtables:
+  en: Hashtables (Mb)
+  rs: Hashtables (Mb)
+  ru: Таблицы транспозиций (Мб)
+  de: Hashtables (Mb)
 
 # Solution screen
 SS_Solution:

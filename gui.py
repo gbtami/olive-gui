@@ -1987,8 +1987,7 @@ class PopeyeView(QtGui.QSplitter):
             input = legacy.popeye.create_input(
                 entry,
                 False,
-                copy.deepcopy(
-                    Conf.value('popeye-sticky-options')),
+                copy.deepcopy(Conf.popeye['sticky-options']),
                 Mainframe.model.board.toPopeyePiecesClause())
             self.runPopeyeInGui(input)
 
@@ -1999,44 +1998,84 @@ class PopeyeView(QtGui.QSplitter):
         self.setActionEnabled(True)
         self.input.setActions(actions)
 
+    class PopeyePath(QtGui.QLineEdit):
+
+        def __init__(self):
+            super(PopeyeView.PopeyePath, self).__init__()
+
+        def mousePressEvent(self, e):
+            fileName = QtGui.QFileDialog.getOpenFileName(
+                    self, Lang.value('TC_Popeye'), os.path.dirname(Conf.popeye['path']))
+            if not fileName:
+                return
+            Conf.popeye['path'] = unicode(fileName)
+            self.setText(Conf.popeye['path'])
+
+        def setText(self, text):
+            maxLen = 40
+            if len(text) > maxLen:
+                text = text[:maxLen/2] + ' ... ' + text[-maxLen/2:]
+            return super(PopeyeView.PopeyePath, self).setText(text)
+
     def __init__(self):
         super(PopeyeView, self).__init__(QtCore.Qt.Horizontal)
 
         self.input = PopeyeInputWidget()
-        # self.input.setReadOnly(True)
         self.output = PopeyeOutputWidget(self)
         self.output.setReadOnly(True)
-        # self.output.setTextColor(QtGui.QColor(255,255,255))
-        #self.output.setTextBackgroundColor(QtGui.QColor(255, 0, 0))
 
         self.sstip = QtGui.QCheckBox(Lang.value('PS_SStipulation'))
         self.btnEdit = QtGui.QPushButton(Lang.value('PS_Edit'))
         self.btnEdit.clicked.connect(self.onEdit)
         w = QtGui.QWidget()
 
+        row = 0
         grid = QtGui.QGridLayout()
-        grid.addWidget(self.input, 0, 0, 1, 2)
+
+        self.labelPopeye = QtGui.QLabel(Lang.value('TC_Popeye') + ':')
+        grid.addWidget(self.labelPopeye, row, 0)
+        row +=1
+
+        self.inputPyPath = PopeyeView.PopeyePath()
+        self.inputPyPath.setText(QtCore.QString(Conf.popeye['path']))
+        self.inputPyPath.setReadOnly(True)
+        grid.addWidget(self.inputPyPath, row, 0, 1, 2)
+        row += 1
+
+        self.labelMemory = QtGui.QLabel(Lang.value('PS_Hashtables') + ':')
+        grid.addWidget(self.labelMemory, row, 0)
+        self.inputMemory = QtGui.QLineEdit()
+        self.inputMemory.setText(str(Conf.popeye['memory']))
+        self.inputMemory.setValidator(QtGui.QIntValidator(1, 1000000))
+        self.inputMemory.textChanged.connect(self.onMemoryChanged)
+        grid.addWidget(self.inputMemory, row, 1)
+        row += 1
+
+        grid.addWidget(self.input, row, 0, 1, 2)
+        row += 1
 
         self.labelStipulation = QtGui.QLabel(
             Lang.value('EP_Stipulation') + ':')
-        grid.addWidget(self.labelStipulation, 1, 0)
+        grid.addWidget(self.labelStipulation, row, 0)
+        self.labelIntended = QtGui.QLabel(
+                Lang.value('EP_Intended_solutions') + ':')
+        grid.addWidget(self.labelIntended, row, 1)
+        row += 1
 
         self.inputStipulation = QtGui.QComboBox()
         self.inputStipulation.setEditable(True)
         self.inputStipulation.addItems(PopeyeView.stipulations)
-        grid.addWidget(self.inputStipulation, 2, 0)
-
-        self.labelIntended = QtGui.QLabel(
-            Lang.value('EP_Intended_solutions') + ':')
-        grid.addWidget(self.labelIntended, 1, 1)
+        grid.addWidget(self.inputStipulation, row, 0)
         self.inputIntended = QtGui.QLineEdit()
-        grid.addWidget(self.inputIntended, 2, 1)
+        grid.addWidget(self.inputIntended, row, 1)
+        row += 1
 
-        grid.addWidget(self.btnEdit, 3, 0)
+        grid.addWidget(self.btnEdit, row, 0)
+        row += 1
 
         # stretcher
-        grid.addWidget(QtGui.QWidget(), 4, 2)
-        grid.setRowStretch(4, 1)
+        grid.addWidget(QtGui.QWidget(), row, 2)
+        grid.setRowStretch(row, 1)
         grid.setColumnStretch(2, 1)
 
         w.setLayout(grid)
@@ -2071,6 +2110,10 @@ class PopeyeView(QtGui.QSplitter):
         Mainframe.model.markDirty()
         Mainframe.sigWrapper.sigModelChanged.emit()
         self.skip_model_changed = False
+
+    def onMemoryChanged(self):
+        try: Conf.popeye['memory'] = int(str(self.inputMemory.text()))
+        except: pass
 
     def onOptions(self):
         entry_options = []
@@ -2156,12 +2199,12 @@ class PopeyeView(QtGui.QSplitter):
         self.process.readyReadStandardError.connect(self.onError)
         self.process.finished.connect(self.onFinished)
         # self.process.closeWriteChannel()
-        py_exe = Conf.value('popeye-executable')[os.name].split(" ")
-        params = py_exe[1:]
+        py_exe = Conf.popeye['path']
+        params = ['-maxmem', str(Conf.popeye['memory']) + 'M']
         params.append(self.temp_filename)
-        # print py_exe[0], params
+        #print py_exe, params
         self.process.error.connect(self.onFailed)
-        self.process.start(py_exe[0], params)
+        self.process.start(py_exe, params)
 
     def startPopeye(self):
         self.runPopeyeInGui(str(self.input.toPlainText()))
@@ -2173,14 +2216,13 @@ class PopeyeView(QtGui.QSplitter):
             pass
         self.setActionEnabled(True)
         if not self.stop_requested:
-            msgBox(Lang.value('MSG_Popeye_failed') %
-                   Conf.value('popeye-executable')[os.name])
+            msgBox(Lang.value('MSG_Popeye_failed') % Conf.popeye['path'])
 
     def onOut(self):
         data = self.process.readAllStandardOutput()
         self.raw_output = self.raw_output + str(data)
         self.output.insertPlainText(QtCore.QString(data))
-        if len(self.raw_output) > int(Conf.value('popeye-stop-max-bytes')):
+        if len(self.raw_output) > int(Conf.popeye['stop-max-bytes']):
             self.stopPopeye()
 
     def onError(self):
@@ -2236,8 +2278,7 @@ class PopeyeView(QtGui.QSplitter):
             legacy.popeye.create_input(
                 Mainframe.model.cur(),
                 self.sstip.isChecked(),
-                copy.deepcopy(
-                    Conf.value('popeye-sticky-options')),
+                copy.deepcopy(Conf.popeye['sticky-options']),
                 Mainframe.model.board.toPopeyePiecesClause()))
         if self.skip_model_changed:
             return
@@ -2265,6 +2306,8 @@ class PopeyeView(QtGui.QSplitter):
         self.skip_model_changed = False
 
     def onLangChanged(self):
+        self.labelPopeye.setText(Lang.value('TC_Popeye') + ':')
+        self.labelMemory.setText(Lang.value('PS_Hashtables') + ':')
         self.labelStipulation.setText(Lang.value('EP_Stipulation') + ':')
         self.labelIntended.setText(Lang.value('EP_Intended_solutions') + ':')
         self.btnEdit.setText(Lang.value('PS_Edit'))
@@ -2540,45 +2583,44 @@ class Conf:
     file = 'conf/main.yaml'
     keywords_file = 'conf/keywords.yaml'
     zoo_file = 'conf/zoos.yaml'
+    popeye_file = 'conf/popeye.yaml'
 
     def read():
-        f = open(Conf.file, 'r')
-        try:
+
+        with open(Conf.file, 'r') as f:
             Conf.values = yaml.load(f)
-        finally:
-            f.close()
 
         Conf.zoos = []
-        f = open(Conf.zoo_file, 'r')
-        try:
+        with open(Conf.zoo_file, 'r') as f:
             for zoo in yaml.load_all(f):
                 Conf.zoos.append(zoo)
-        finally:
-            f.close()
 
-        f = open(Conf.keywords_file, 'r')
-        try:
+        with open(Conf.keywords_file, 'r') as f:
             Conf.keywords = yaml.load(f)
-        finally:
-            f.close()
+
+        with open(Conf.popeye_file, 'r') as f:
+            Conf.popeye = yaml.load(f)
+
     read = staticmethod(read)
 
     def write():
-        f = open(Conf.file, 'w')
-        try:
-            f.write(
-                unicode(
-                    yaml.dump(
-                        Conf.values,
-                        encoding=None,
-                        allow_unicode=True)).encode('utf8'))
-        finally:
-            f.close()
+        with open(Conf.file, 'w') as f:
+            f.write(Conf.dump(Conf.values))
+        with open(Conf.popeye_file, 'w') as f:
+            f.write(Conf.dump(Conf.popeye))
     write = staticmethod(write)
 
     def value(v):
         return Conf.values[v]
     value = staticmethod(value)
+
+    def dump(object):
+        return unicode(
+                yaml.dump(
+                        object,
+                        encoding=None,
+                        allow_unicode=True)).encode('utf8')
+    dump = staticmethod(dump)
 
 
 class Lang:
