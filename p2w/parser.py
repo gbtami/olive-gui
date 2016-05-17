@@ -127,11 +127,114 @@ def p_MoveList(t):
 
 
 def p_Move(t):
-    '''Move: MoveNo HalfMove HalfMove
-            | MoveNo HALF_ELLIPSIS HalfMove
+    '''Move: BUT MoveNo HALF_ELLIPSIS HalfMove
             | MoveNo HALF_ELLIPSIS ELLIPSIS
+            | MoveNo HALF_ELLIPSIS HalfMove
             | MoveNo HalfMove THREAT
-            | BUT MoveNo HALF_ELLIPSIS HalfMove
             | MoveNo HalfMove ZUGZWANG
+            | MoveNo HalfMove HalfMove
             | MoveNo HalfMove'''
+    if t[1] == 'but':
+        t[0] = [t[5].setv('depth', t[3])]
+    elif t[2] == '..' and t[3] == '...':
+        t[0] = [NullNode(t[1], False)]
+    elif t[2] == '..':
+        t[0] = [t[3].setv('depth', t[1] + 1)]
+    elif t[3] == 'threat:':
+        t[0] = [t[2].setv('depth', t[1]).setv('childIsThreat', True)]
+    elif t[3] == 'zugzwang.':
+        t[0] = [t[2].setv('depth', t[1])]
+    elif len(t) == 4:
+        t[0] = [t[2].setv('depth', t[1]), t[3].setv('depth', t[1] + 1)]
+    else:
+        t[0] = [t[2].setv('depth', t[1])]
+
+
+def t_Ply(t):
+    '''Ply: Body
+        | Ply EQUALS ColorPrefix
+        | Ply EQUALS PieceDecl
+        | Ply EQUALS LongPieceDecl
+        | Ply LEFT_SQUARE_BRACKET PLUS LongPieceDecl Square EQUALS PieceDecl RIGHT_SQUARE_BRACKET
+        | Ply LEFT_SQUARE_BRACKET PLUS LongPieceDecl Square RIGHT_SQUARE_BRACKET
+        | Ply LEFT_SQUARE_BRACKET LongPieceDecl Square ARROW Square EQUALS PieceDecl RIGHT_SQUARE_BRACKET
+        | Ply LEFT_SQUARE_BRACKET LongPieceDecl Square ARROW Square RIGHT_SQUARE_BRACKET
+        | Ply LEFT_SQUARE_BRACKET Square EQUALS PieceDecl RIGHT_SQUARE_BRACKET
+        | Ply LEFT_SQUARE_BRACKET Square EQUALS ColorPrefix RIGHT_SQUARE_BRACKET
+        | Ply LEFT_SQUARE_BRACKET DASH Square RIGHT_SQUARE_BRACKET
+        | Ply IMITATOR_MOVEMENT_OPENING_BRACKET SquareList RIGHT_SQUARE_BRACKET'''
     pass
+
+
+def t_Ply_Body(t):
+    'Ply: Body'
+    t[0] = t[1]
+
+
+def t_Ply_ColorPrefix(t):
+    'Ply: Ply EQUALS ColorPrefix'
+    t[1].recolorings[t[3]].apend(t[1].arrival)
+    t[0] = t[1]
+
+
+def t_Ply_Promotion(t):
+    ''' Ply: Ply EQUALS PieceDecl
+        Ply: Ply EQUALS LongPieceDecl'''
+    t[0] = t[1].setv('promotion', t[3])
+
+
+def t_Ply_Rebirth_Promotion(t):
+    'Ply: Ply LEFT_SQUARE_BRACKET PLUS LongPieceDecl Square EQUALS PieceDecl RIGHT_SQUARE_BRACKET'
+    t[1].rebirths.append({
+        'unit': t[4], 'at': t[5], 'prom': t[7]
+    })
+    t[0] = t[1]
+
+def t_Ply_Rebirth(t):
+    'Ply: Ply LEFT_SQUARE_BRACKET PLUS LongPieceDecl Square RIGHT_SQUARE_BRACKET'
+    t[1].rebirths.append({
+        'unit': t[4], 'at': t[5], 'prom': None
+    })
+    t[0] = t[1]
+
+
+def t_Ply_Antirebirth_Promotion(t):
+    'Ply: Ply LEFT_SQUARE_BRACKET LongPieceDecl Square ARROW Square EQUALS PieceDecl RIGHT_SQUARE_BRACKET'
+    t[1].antirebirths.append({
+        'unit': t[3], 'from': t[4], 'to': t[6], 'prom': t[8]
+    })
+    t[0] = t[1]
+
+
+def t_Ply_Antirebirth(t):
+    'Ply: Ply LEFT_SQUARE_BRACKET LongPieceDecl Square ARROW Square RIGHT_SQUARE_BRACKET'
+    t[1].antirebirths.append({
+        'unit': t[3], 'from': t[4], 'to': t[6], 'prom': None
+    })
+    t[0] = t[1]
+
+
+# remote promotion happens eg in KobulKings capture
+def t_Ply_Remote_Promotion(t):
+    'Ply: Ply LEFT_SQUARE_BRACKET Square EQUALS PieceDecl RIGHT_SQUARE_BRACKET'
+    t[1].promotions.append({
+        'unit': t[5],
+        'at': t[3]
+    })
+    t[0] = t[1]
+
+
+def t_Ply_Recoloring(t):
+    'Ply: Ply LEFT_SQUARE_BRACKET Square EQUALS ColorPrefix RIGHT_SQUARE_BRACKET'
+    t[1].recolorings[t[5]].append(t[3])
+    t[0] = t[1]
+
+
+def t_Ply_Removal(t):
+    'Ply: '
+    t[0] = t[1]
+
+
+def t_Ply_Imitators(t):
+    'Ply: '
+    t[0] = t[1]
