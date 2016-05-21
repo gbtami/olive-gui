@@ -59,6 +59,7 @@ class Mainframe(QtGui.QMainWindow):
     transform_icons = ['up', 'down', 'left',
                        'right', 'rotate-clockwise', 'rotate-anticlockwise',
                        'left-right', 'up-down', 'switch', 'out']
+    selectedPiece = None
 
     class CheckNewVersion(QtCore.QThread):
 
@@ -853,14 +854,13 @@ class AboutDialog(QtGui.QDialog):
                 'olive v' +
                 Conf.value('version') +
                 ' is free software licensed under GNU GPL'))
-        vbox.addWidget(ClickableLabel(u'© 2011-2013'))
+        vbox.addWidget(ClickableLabel(u'© 2011-2016'))
         vbox.addWidget(ClickableLabel(u'Project contributors:'))
-        vbox.addWidget(ClickableLabel(u'<b>Mihail Croitor</b> - Moldova'))
-        vbox.addWidget(ClickableLabel(u'<b>Борислав Гађански</b> - Serbia'))
-        vbox.addWidget(ClickableLabel(u'<b>Torsten Linß</b> - Germany'))
-        vbox.addWidget(ClickableLabel(u'<b>Дмитрий Туревский</b> - Russia'))
+        vbox.addWidget(ClickableLabel(u'<b>Mihail Croitor (MDA), Борислав Гађански (SRB)</b>'))
+        vbox.addWidget(ClickableLabel(u'<b>Torsten Linß (GER), Thomas Maeder (CHE)</b>'))
+        vbox.addWidget(ClickableLabel(u'<b>Phil Sphicas (USA), Дмитрий Туревский (RUS)</b>'))
         vbox.addWidget(ClickableLabel(
-            'For more information please visit <a href="http://code.google.com/p/olive-gui/">http://code.google.com/p/olive-gui/</a>'))
+            'For more information please visit <a href="http://www.yacpdb.org/#static/olive">http://www.yacpdb.org/#static/olive</a>'))
 
         vbox.addStretch(1)
         buttonOk = QtGui.QPushButton(Lang.value('CO_OK'), self)
@@ -1200,16 +1200,34 @@ class DraggableLabel(QtGui.QLabel):
     # mouseMoveEvent works as well but with slightly different mechanics
     def mousePressEvent(self, e):
         Mainframe.sigWrapper.sigFocusOnPieces.emit()
-
         if e.buttons() != QtCore.Qt.LeftButton:
+            # On right click
+            # if the square is empty, add the selected piece
+            # if the square is non-empty, remove it
+            if Mainframe.model.board.board[self.id] is None:
+                if Mainframe.selectedPiece is not None:
+                    Mainframe.model.board.add(model.Piece(Mainframe.selectedPiece.name,
+                                                          Mainframe.selectedPiece.color,
+                                                          Mainframe.selectedPiece.specs),
+                                              self.id)
+                else:
+                    return
+            else:
+                Mainframe.selectedPiece = Mainframe.model.board.board[self.id]
+                Mainframe.model.board.drop(self.id)
+            Mainframe.model.onBoardChanged()
+            Mainframe.sigWrapper.sigModelChanged.emit()
             return
         if Mainframe.model.board.board[self.id] is None:
             return
 
+        # ctrl-drag copies existing piece
+        modifiers = QtGui.QApplication.keyboardModifiers()
         Mainframe.currentlyDragged = Mainframe.model.board.board[self.id]
-        Mainframe.model.board.drop(self.id)
-        Mainframe.model.onBoardChanged()
-        Mainframe.sigWrapper.sigModelChanged.emit()
+        if not (modifiers & QtCore.Qt.ControlModifier):
+            Mainframe.model.board.drop(self.id)
+            Mainframe.model.onBoardChanged()
+            Mainframe.sigWrapper.sigModelChanged.emit()
 
         mimeData = QtCore.QMimeData()
         drag = QtGui.QDrag(self)
