@@ -376,13 +376,15 @@ class Mainframe(QtGui.QMainWindow):
             QtGui.QIcon(
                 QtGui.QPixmap('resources/icons/olive.png')))
 
+
+
         # restoring windows and toolbars geometry
         settings = QtCore.QSettings()
-        if len(settings.value("overviewColumnWidths").toByteArray()):
+        if len(settings.value("overviewColumnWidths").toString()) > 0:
             self.restoreGeometry(settings.value("geometry").toByteArray())
             self.restoreState(settings.value("windowState").toByteArray())
-            self.overview.setColumnWidths(
-                settings.value("overviewColumnWidths").toByteArray())
+            self.overview.setColumnWidthsFromString(
+                settings.value("overviewColumnWidths").toString())
         else:
             # first run
             self.setGeometry(32, 32, 32, 32)
@@ -1057,7 +1059,7 @@ class OverviewList(QtGui.QTreeWidget):
         if not fileName:
             return
 
-        f = open(fileName, 'w')
+        f = open(unicode(fileName), 'w')
         try:
             f.write(self.getSelectionAsYaml().encode('utf8'))
         except IOError:
@@ -1070,15 +1072,15 @@ class OverviewList(QtGui.QTreeWidget):
         self.onLangChanged()
 
     def getColumnWidths(self):
-        retval = str()
-        for i in xrange(self.columnCount()):
-            retval += struct.pack("I", self.columnWidth(i))
-        return QtCore.QByteArray.fromRawData(retval)
+        return ";".join([str(self.columnWidth(i)) for i in xrange(self.columnCount())])
 
-    def setColumnWidths(self, widths):
-        w = widths.data()
-        for i in xrange(self.columnCount()):
-            self.setColumnWidth(i, struct.unpack("I", w[i * 4:(i + 1) * 4])[0])
+    def setColumnWidthsFromString(self, widths):
+        try:
+            intList = [int(s) for s in widths.split(";")]
+            for i, w in enumerate(intList):
+                self.setColumnWidth(i, w)
+        except :
+            pass
 
     def onLangChanged(self):
         self.setHeaderLabels(['',
