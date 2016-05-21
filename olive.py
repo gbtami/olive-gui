@@ -15,10 +15,13 @@ import ctypes
 from PyQt4 import QtGui, QtCore
 
 # local
+import base
 import gui
 
 
 def main():
+
+
 
     # trick to make Windows 7 display the app icon in the taskbar:
     if 'nt' == os.name:
@@ -50,7 +53,7 @@ def main():
 
     # if invoked with "olive.py filename.olv" - read filename.olv
     if len(sys.argv) and sys.argv[-1][-4:] == '.olv':
-        mainframe.openCollection(sys.argv[-1])
+        mainframe.openCollection(unicode(sys.argv[-1], sys.getfilesystemencoding()))
 
     # entering main loop
     sys.exit(app.exec_())
