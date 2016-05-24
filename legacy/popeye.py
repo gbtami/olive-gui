@@ -33,7 +33,7 @@ RE_PY_OPTIONS = [re.compile('^' + expr + '$', re.IGNORECASE) for expr in [
     "Variation",
     "Duplex",
     "MaxFlightsquares [1-9][0-9]*",
-    "EnPassant [a-h][36]( [a-h][36])?",
+    "EnPassant ([a-h][1-8])+",
     "HalfDuplex",
     "PostKeyPlay",
     "NoCastling( [a-h][1-8])+",
