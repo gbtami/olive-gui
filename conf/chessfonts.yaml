@@ -1,7 +1,7 @@
 diagram-fonts: [ISDiagram, GC, merida, alpha, leipzig]
 inline-fonts: [default, Ches]
 defaults:
-  diagram: ISDiagram
+  diagram: GC
   inline: Ches
 config:
   GC:
