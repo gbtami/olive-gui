@@ -2162,8 +2162,7 @@ class PopeyeView(QtGui.QSplitter):
             lines = self.raw_output.strip().split("\n")
             if len(lines) < 2:
                 return
-            Mainframe.model.cur()['solution'] = (
-                "\n".join(lines[1:-2])).strip()
+            Mainframe.model.cur()['solution'] = PopeyeView.trimIndented("\n".join(lines[1:-2]))
         else:
             Mainframe.model.cur()['solution'] = self.solutionOutput.solution
 
@@ -2278,10 +2277,35 @@ class PopeyeView(QtGui.QSplitter):
             b = legacy.chess.Board()
             b.from_algebraic(self.entry_copy['algebraic'])
             self.solutionOutput.create_output(self.solution, b)
+            self.solutionOutput.solution = PopeyeView.trimIndented(self.solutionOutput.solution)
             self.toggleCompact()
         except (legacy.popeye.ParseError, legacy.chess.UnsupportedError) as e:
             msgBox(Lang.value('MSG_Not_supported') % str(e))
             self.compact_possible = False
+
+
+    def trimIndented(text):
+
+        def countLeadingSpaces(line):
+            r = 0
+            for c in line:
+                if c != " ":
+                    return r
+                r += 1
+            return len(line)
+
+        lines, minIndent = text.splitlines(False), 1024
+        for line in lines:
+            if line.strip() == "":
+                continue
+            ls = countLeadingSpaces(line)
+            if ls < minIndent:
+                minIndent = ls
+
+        return ("\n".join([line[minIndent:] if line.strip() != "" else "" for line in lines])).strip()
+
+
+    trimIndented = staticmethod(trimIndented)
 
     def onModelChanged(self):
         self.input.setText(

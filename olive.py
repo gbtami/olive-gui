@@ -21,20 +21,19 @@ import gui
 
 def main():
 
-
+    # loading configs
+    gui.Conf.read()
+    gui.Lang.read()
 
     # trick to make Windows 7 display the app icon in the taskbar:
     if 'nt' == os.name:
         try:
-            myappid = 'OrgYacpdb.OliveShmolive.CurrentVersion'
+            myappid = 'OrgYacpdb.Olive.CurrentVersion.' + gui.Conf.value('version')
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
                 myappid)
         except:
             pass
 
-    # loading configs
-    gui.Conf.read()
-    gui.Lang.read()
 
     # Qt bootstrap
     app = QtGui.QApplication(sys.argv)

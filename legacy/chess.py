@@ -1226,7 +1226,6 @@ class SolutionOutput:
         for twin in root_node.siblings:
             twin.dump(board, self, 1 == len(root_node.siblings))
             self.solution += "\n\n"
-        self.solution = self.solution.strip()
 
 
 class UnsupportedError(Exception):
